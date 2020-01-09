@@ -1,0 +1,66 @@
+var spreadsheetId = "1_5KxNwImWQLCg1GLc1fQdWNt2YCe8NrNE3LMsmIuyPM";
+var sheetName = "DA & TV";
+var spreadsheet = SpreadsheetApp.openById(spreadsheetId); 
+
+function main() {
+  
+ var currentSheet = spreadsheet.getSheetByName(sheetName);
+
+ currentSheet.clear();
+ Logger.log("Sheet Cleared");
+  
+  var header = [["Account","Campaign", "Ad Group", "Live ETAs", "Total ETAs", "Impressions", "CTR", "Conv. Rate", "Live RSAs", "Total RSAs", "Impressions", "CTR", "Conv. Rate"]];
+  currentSheet.getRange("A1:M1").setValues(header);
+  Logger.log("Headers Created");
+  
+  //var arrNew = ["528-205-1285","415-398-8196","316-823-4757","188-102-5376","959-081-0373","485-826-3022","846-269-9899","965-566-5145","301-830-2074"];
+  var arrNew = ["959-081-0373","485-826-3022"];
+  
+  var accounts = AdsManagerApp.accounts().withIds(arrNew);
+  
+  var accountIterator = accounts.get();
+ while (accountIterator.hasNext()) {
+   var account = accountIterator.next();}
+  accounts.executeInParallel("checkAds");
+}
+ 
+function checkAds(){
+ var currentSheet = spreadsheet.getSheetByName(sheetName);
+  
+ var adminRow = currentSheet.getLastRow()+1;
+ var row = currentSheet.getLastRow()+1;
+  
+ Logger.log("Admin Row: " + adminRow + " Row: " + row)
+  
+ var clientAccount = AdsApp.currentAccount();
+ var selectedA = AdsApp.currentAccount().getName();
+  
+    Logger.log("The Account: " + selectedA + " Has Been Selected");
+       
+ var adGroups = AdsApp.adGroups()
+ .withCondition("CampaignName DOES_NOT_CONTAIN 'Gallery'")
+ .withCondition("CampaignStatus = ENABLED")
+ .withCondition("Status = ENABLED")
+ .forDateRange("LAST_30_DAYS")
+ .get();
+     
+ while (adGroups.hasNext()) {
+ var adGroup = adGroups.next(); 
+ currentSheet.getRange(row, 1).setValue(selectedA);
+ currentSheet.getRange(row, 2).setValue(adGroup.getCampaign().getName());
+ currentSheet.getRange(row, 3).setValue(adGroup.getName());
+   
+var numOfTotalAds = adGroup.ads().withCondition("Type in [EXPANDED_TEXT_AD, TEXT_AD]").get().totalNumEntities(); 
+ var numOfAds = adGroup.ads().withCondition("Type in [EXPANDED_TEXT_AD, TEXT_AD]").withCondition("Status = ENABLED").get().totalNumEntities();
+   
+ currentSheet.getRange(row, 4).setValue(numOfAds);
+ currentSheet.getRange(row, 5).setValue(numOfTotalAds);
+ 
+ var numOfTotalAds2 = adGroup.ads().withCondition("Type in [RESPONSIVE_SEARCH_AD]").get().totalNumEntities();
+ var numOfAds2 = adGroup.ads().withCondition("Type in [RESPONSIVE_SEARCH_AD]").withCondition("Status = ENABLED").get().totalNumEntities();
+
+ currentSheet.getRange(row, 6).setValue(numOfAds2);
+ currentSheet.getRange(row, 7).setValue(numOfTotalAds2);
+ Logger.log("Row Number -> " + row + " Was Written");
+ row++;
+ }    }    }
