@@ -1,0 +1,62 @@
+var spreadsheetId = "INPUT_YOUR_SHEET_ID";
+
+function main() {
+ sheetPrep();
+ checkAds();
+}
+
+function sheetPrep(){
+ var spreadsheetId = "INPUT_YOUR_SHEET_ID";
+ var sheetName = "INPUT_YOUR_SHEET_NAME";
+ var spreadsheet = SpreadsheetApp.openById(spreadsheetId);  
+ var currentSheet = spreadsheet.getSheetByName(sheetName);
+  currentSheet.clear();
+  Logger.log("Sheet Cleared");
+
+ var header = [["Account","Campaign", "Ad Group", "Live ETAs", "Total ETAs", "Live RSAs", "Total RSAs"]];
+  currentSheet.getRange("A1:G1").setValues(header);
+  Logger.log("Headers Created"); 
+}
+ 
+function checkAds(){
+  var arrNew = ["ARRAY_WITH_ACCOUNT_IDS"];
+  var accounts = AdsManagerApp.accounts().withIds(arrNew).get();
+   
+  var row = 2;
+
+  while (accounts.hasNext()) {
+    var a = accounts.next();
+    AdsManagerApp.select(a);
+    var selectedA = AdsApp.currentAccount().getName();
+       
+ var adGroups = AdsApp.adGroups()
+ .withCondition("AdGroupName DOES_NOT_CONTAIN 'Gallery_Ads'")
+ .withCondition("AdGroupName DOES_NOT_CONTAIN 'Gallery Ads'")
+ .withCondition("CampaignName DOES_NOT_CONTAIN 'DSA'")
+ .withCondition("CampaignStatus = ENABLED")
+ .withCondition("AdGroupStatus = ENABLED")
+ .get();
+ 
+   var spreadsheet = SpreadsheetApp.openById(spreadsheetId);  
+   var sheetName = "INPUT_YOUR_SHEET_NAME"; 
+   var currentSheet = spreadsheet.getSheetByName(sheetName);
+   
+ while (adGroups.hasNext()) {
+ var adGroup = adGroups.next(); 
+ currentSheet.getRange(row, 1).setValue(selectedA);
+ currentSheet.getRange(row, 2).setValue(adGroup.getCampaign().getName());
+ currentSheet.getRange(row, 3).setValue(adGroup.getName());
+   
+ var numOfTotalAds = adGroup.ads().withCondition("Type in [EXPANDED_TEXT_AD, TEXT_AD]").get().totalNumEntities(); 
+ var numOfAds = adGroup.ads().withCondition("Type in [EXPANDED_TEXT_AD, TEXT_AD]").withCondition("Status = ENABLED").get().totalNumEntities();
+   
+ currentSheet.getRange(row, 4).setValue(numOfAds);
+ currentSheet.getRange(row, 5).setValue(numOfTotalAds);
+ 
+ var numOfTotalAds2 = adGroup.ads().withCondition("Type in [RESPONSIVE_SEARCH_AD]").get().totalNumEntities();
+ var numOfAds2 = adGroup.ads().withCondition("Type in [RESPONSIVE_SEARCH_AD]").withCondition("Status = ENABLED").get().totalNumEntities();
+
+ currentSheet.getRange(row, 6).setValue(numOfAds2);
+ currentSheet.getRange(row, 7).setValue(numOfTotalAds2);
+ row++;
+ }    }    }
