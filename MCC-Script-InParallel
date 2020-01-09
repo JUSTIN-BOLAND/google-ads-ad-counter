@@ -1,5 +1,5 @@
-var spreadsheetId = "1_5KxNwImWQLCg1GLc1fQdWNt2YCe8NrNE3LMsmIuyPM";
-var sheetName = "DA & TV";
+var spreadsheetId = "INPUT_YOUR_SHEET_ID";
+var sheetName = "INPUT_YOUR_SHEET_NAME";
 var spreadsheet = SpreadsheetApp.openById(spreadsheetId); 
 
 function main() {
@@ -9,18 +9,14 @@ function main() {
  currentSheet.clear();
  Logger.log("Sheet Cleared");
   
-  var header = [["Account","Campaign", "Ad Group", "Live ETAs", "Total ETAs", "Impressions", "CTR", "Conv. Rate", "Live RSAs", "Total RSAs", "Impressions", "CTR", "Conv. Rate"]];
+  var header = [["Account","Campaign", "Ad Group", "Live ETAs", "Total ETAs", "Live RSAs", "Total RSAs"]];
   currentSheet.getRange("A1:M1").setValues(header);
-  Logger.log("Headers Created");
-  
-  //var arrNew = ["528-205-1285","415-398-8196","316-823-4757","188-102-5376","959-081-0373","485-826-3022","846-269-9899","965-566-5145","301-830-2074"];
-  var arrNew = ["959-081-0373","485-826-3022"];
-  
+  var arrNew = ["ARRAY_WITH_ACCOUNT_IDS"];  
   var accounts = AdsManagerApp.accounts().withIds(arrNew);
   
   var accountIterator = accounts.get();
  while (accountIterator.hasNext()) {
-   var account = accountIterator.next();}
+   var accounts = accountIterator.next();}
   accounts.executeInParallel("checkAds");
 }
  
@@ -29,14 +25,10 @@ function checkAds(){
   
  var adminRow = currentSheet.getLastRow()+1;
  var row = currentSheet.getLastRow()+1;
-  
- Logger.log("Admin Row: " + adminRow + " Row: " + row)
-  
+    
  var clientAccount = AdsApp.currentAccount();
  var selectedA = AdsApp.currentAccount().getName();
-  
-    Logger.log("The Account: " + selectedA + " Has Been Selected");
-       
+         
  var adGroups = AdsApp.adGroups()
  .withCondition("CampaignName DOES_NOT_CONTAIN 'Gallery'")
  .withCondition("CampaignStatus = ENABLED")
